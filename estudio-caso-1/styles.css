@@ -1,0 +1,197 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    background: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+.navbar {
+    background-color: #007BFF;
+    padding: 1rem;
+}
+
+.nav-links {
+    display: flex;
+    justify-content: space-around;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s;
+    padding: 0.5rem 1rem;
+}
+
+.nav-links a:hover {
+    color: #FFD700;
+}
+
+.doctor-profile {
+    background: white;
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 800px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.doctor-name {
+    color: #007BFF;
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.doctor-specialty {
+    color: #666;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+#doctor-description {
+    line-height: 1.6;
+    margin: 1.5rem 0;
+    color: #444;
+}
+
+.appointment-button {
+    background: #007BFF;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 1.1rem;
+}
+
+.appointment-button:hover {
+    background: #0056b3;
+}
+
+.patient-comments {
+    display: flex;
+    gap: 1.5rem;
+    padding: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.comment-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: 300px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.comment-card:hover {
+    transform: translateY(-5px);
+}
+
+.patient-name {
+    color: #007BFF;
+    margin-bottom: 0.8rem;
+    font-size: 1.2rem;
+}
+
+.comment {
+    color: #555;
+    font-style: italic;
+}
+
+.comment-date {
+    display: block;
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.comment-actions {
+    margin-top: 1rem;
+}
+
+.comment-actions button {
+    background: #007BFF;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-right: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.comment-actions button:hover {
+    background: #0056b3;
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .nav-links li {
+        margin: 0.5rem 0;
+    }
+
+    .doctor-profile {
+        margin: 1rem;
+        padding: 1rem;
+    }
+
+    .patient-comments {
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+    }
+
+    .comment-card {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+.add-comment {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.add-comment h3 {
+    color: #007BFF;
+    margin-bottom: 1rem;
+}
+
+.comment-input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.add-comment-btn {
+    background: #007BFF;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.add-comment-btn:hover {
+    background: #0056b3;
+}

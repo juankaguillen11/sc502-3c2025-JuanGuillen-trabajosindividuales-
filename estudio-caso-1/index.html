@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Médica - Perfil Doctor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="nav-links">
+            <li><a href="#">Inicio</a></li>
+            <li><a href="#">Servicios</a></li>
+            <li><a href="#">Perfil del Doctor</a></li>
+            <li><a href="#">Contacto</a></li>
+        </ul>
+    </nav>
+
+    <section class="doctor-profile">
+        <h1 class="doctor-name">Dr. Juan Carlos Guillen</h1>
+        <h2 class="doctor-specialty">Pediatría</h2>
+        <p id="doctor-description">Especialista en atención infantil con 12 años de experiencia. Certificado en medicina integral del niño.</p>
+        <button class="appointment-button">Agendar Consulta</button>
+    </section>
+
+    <section class="patient-comments" id="commentsList">
+        <!-- Los comentarios se generarán dinámicamente aquí -->
+    </section>
+
+    <section class="add-comment">
+        <h3>Agregar Nuevo Comentario</h3>
+        <input type="text" id="newCommentName" placeholder="Tu nombre" class="comment-input">
+        <textarea id="newCommentText" placeholder="Tu comentario" class="comment-input"></textarea>
+        <button id="addCommentBtn" class="add-comment-btn">Agregar Comentario</button>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
