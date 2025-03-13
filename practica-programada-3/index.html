@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Transacciones de Tarjeta de Crédito</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Registro de Transacciones</h1>
+        <form id="transaccion-form">
+            <input type="text" id="descripcion" name="descripcion" placeholder="Descripción de la transacción" required>
+            <input type="number" id="monto" name="monto" placeholder="Monto" step="0.01" required>
+            <button type="submit">Registrar Transacción</button>
+        </form>
+        <div class="estado-cuenta">
+            <h2>Estado de Cuenta</h2>
+            <ul id="lista-transacciones">
+                <!-- Las transacciones se mostrarán aquí -->
+            </ul>
+            <div id="resumen-cuenta">
+                <!-- El resumen del estado de cuenta se mostrará aquí -->
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
