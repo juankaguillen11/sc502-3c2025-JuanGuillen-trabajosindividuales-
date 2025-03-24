@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     comment.text = commentText;
                 }
             } else {
-                // Agregar nuevo comentario
+                
                 commentCounter++;
                 task.comments.push({
                     id: commentCounter,
@@ -168,6 +168,5 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('commentForm').reset();
     });
 
-    // Inicializar la aplicación
     loadTasks();
 });
