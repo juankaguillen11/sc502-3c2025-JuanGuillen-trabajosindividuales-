@@ -1,25 +1,21 @@
 <?php
-require('db.php');
+require('db.php'); // Conexión a la base de datos
 
-
-function addComment($taskId, $userId, $description)
+function addComment($taskId, $comment)
 {
     global $pdo;
     try {
-        $sql = "INSERT INTO comments (task_id, user_id, description) VALUES (:task_id, :user_id, :description)";
+        $sql = "INSERT INTO comments (task_id, comment) VALUES (:task_id, :comment)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             'task_id' => $taskId,
-            'user_id' => $userId,
-            'description' => $description
+            'comment' => $comment
         ]);
         return $pdo->lastInsertId();
     } catch (Exception $e) {
-        echo $e->getMessage();
         return 0;
     }
 }
-
 
 function getCommentsByTask($taskId)
 {
@@ -30,55 +26,64 @@ function getCommentsByTask($taskId)
         $stmt->execute(['task_id' => $taskId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
-        echo $e->getMessage();
         return [];
     }
 }
 
-
-function updateComment($commentId, $description)
+function updateComment($commentId, $comment)
 {
     global $pdo;
     try {
-        $sql = "UPDATE comments SET description = :description WHERE id = :id";
+        $sql = "UPDATE comments SET comment = :comment WHERE id = :comment_id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            'description' => $description,
-            'id' => $commentId
+            'comment' => $comment,
+            'comment_id' => $commentId
         ]);
         return $stmt->rowCount() > 0;
     } catch (Exception $e) {
-        echo $e->getMessage();
         return false;
     }
 }
-
 
 function deleteComment($commentId)
 {
     global $pdo;
     try {
-        $sql = "DELETE FROM comments WHERE id = :id";
+        $sql = "DELETE FROM comments WHERE id = :comment_id";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute(['id' => $commentId]);
+        $stmt->execute(['comment_id' => $commentId]);
         return $stmt->rowCount() > 0;
     } catch (Exception $e) {
-        echo $e->getMessage();
         return false;
     }
 }
-
 
 $method = $_SERVER['REQUEST_METHOD'];
 header('Content-Type: application/json');
 session_start();
 
-if (isset($_SESSION["user_id"])) {
-    $userId = $_SESSION["user_id"];
-
+if (isset($_SESSION["user_id"])) { // Hay sesión activa
     try {
         switch ($method) {
-            case 'GET': 
+            case 'POST': // Agregar comentario
+                $input = json_decode(file_get_contents("php://input"), true);
+                if (isset($input['task_id'], $input['comment'])) {
+                    $commentId = addComment($input['task_id'], $input['comment']);
+                    if ($commentId > 0) {
+                        http_response_code(201);
+                        echo json_encode(["message" => "Comentario agregado exitosamente", "id" => $commentId]);
+                    } else {
+                        http_response_code(500);
+                        echo json_encode(["error" => "Error al guardar el comentario"]);
+                    }
+                } else {
+                    http_response_code(400);
+                    echo json_encode(["error" => "Faltan datos obligatorios"]);
+                }
+                break;
+
+            case 'GET': // Obtener comentarios de una tarea
                 if (isset($_GET['task_id'])) {
                     $comments = getCommentsByTask($_GET['task_id']);
                     echo json_encode($comments);
@@ -88,27 +93,10 @@ if (isset($_SESSION["user_id"])) {
                 }
                 break;
 
-            case 'POST': 
+            case 'PUT': // Actualizar comentario
                 $input = json_decode(file_get_contents("php://input"), true);
-                if (isset($input['task_id'], $input['description'])) {
-                    $commentId = addComment($input['task_id'], $userId, $input['description']);
-                    if ($commentId > 0) {
-                        http_response_code(201);
-                        echo json_encode(["message" => "Comentario agregado exitosamente", "id" => $commentId]);
-                    } else {
-                        http_response_code(500);
-                        echo json_encode(["error" => "Error al agregar el comentario"]);
-                    }
-                } else {
-                    http_response_code(400);
-                    echo json_encode(["error" => "Datos insuficientes"]);
-                }
-                break;
-
-            case 'PUT': 
-                $input = json_decode(file_get_contents("php://input"), true);
-                if (isset($_GET['id'], $input['description'])) {
-                    if (updateComment($_GET['id'], $input['description'])) {
+                if (isset($_GET['id'], $input['comment'])) {
+                    if (updateComment($_GET['id'], $input['comment'])) {
                         http_response_code(200);
                         echo json_encode(["message" => "Comentario actualizado exitosamente"]);
                     } else {
@@ -121,7 +109,7 @@ if (isset($_SESSION["user_id"])) {
                 }
                 break;
 
-            case 'DELETE': 
+            case 'DELETE': // Eliminar comentario
                 if (isset($_GET['id'])) {
                     if (deleteComment($_GET['id'])) {
                         http_response_code(200);
@@ -132,18 +120,17 @@ if (isset($_SESSION["user_id"])) {
                     }
                 } else {
                     http_response_code(400);
-                    echo json_encode(["error" => "ID de comentario es requerido"]);
+                    echo json_encode(["error" => "ID de comentario requerido"]);
                 }
                 break;
 
             default:
                 http_response_code(405);
                 echo json_encode(["error" => "Método no permitido"]);
-                break;
         }
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(["error" => "Error al procesar la solicitud"]);
+        echo json_encode(["error" => "Error interno del servidor"]);
     }
 } else {
     http_response_code(401);

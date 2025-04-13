@@ -5,7 +5,7 @@ function createTask($userId, $title, $description, $dueDate)
 {
     global $pdo;
     try {
-        $sql = "insert into tasks (user_id, title, description, due_date) value (:user_id, :title, :description, :due_date)";
+        $sql = "INSERT INTO tasks (user_id, title, description, due_date) VALUES (:user_id, :title, :description, :due_date)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             'user_id' => $userId,
@@ -14,7 +14,6 @@ function createTask($userId, $title, $description, $dueDate)
             'due_date' => $dueDate
         ]);
         return $pdo->lastInsertId();
-
     } catch (Exception $e) {
         echo $e->getMessage();
         return 0;
@@ -23,13 +22,32 @@ function createTask($userId, $title, $description, $dueDate)
 
 function getTasksByUser($userId)
 {
+    global $pdo;
     try {
-        global $pdo;
-        $stmt = $pdo->prepare("SELECT * FROM tasks where user_id = :user_id");
+        $stmt = $pdo->prepare("SELECT * FROM tasks WHERE user_id = :user_id");
         $stmt->execute(['user_id' => $userId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Asociar comentarios a cada tarea
+        foreach ($tasks as &$task) {
+            $task['comments'] = getCommentsByTask($task['id']);
+        }
+
+        return $tasks;
     } catch (Exception $ex) {
-        echo "Error al obtener las tareas del usuario" . $ex->getMessage();
+        echo "Error al obtener las tareas del usuario: " . $ex->getMessage();
+        return [];
+    }
+}
+
+function getCommentsByTask($taskId)
+{
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT id, comment FROM comments WHERE task_id = :task_id");
+        $stmt->execute(['task_id' => $taskId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
         return [];
     }
 }
@@ -38,7 +56,7 @@ function editTask($id, $title, $description, $dueDate)
 {
     global $pdo;
     try {
-        $sql = "update tasks set title = :title, description = :description, due_date = :due_date where id = :id";
+        $sql = "UPDATE tasks SET title = :title, description = :description, due_date = :due_date WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             'title' => $title,
@@ -46,8 +64,6 @@ function editTask($id, $title, $description, $dueDate)
             'due_date' => $dueDate,
             'id' => $id
         ]);
-        //si la cantidad de filas editadas es mayor a cero, retorne true, sino, retorne false;
-
         return $stmt->rowCount() > 0;
     } catch (Exception $e) {
         echo $e->getMessage();
@@ -59,10 +75,9 @@ function deleteTask($id)
 {
     global $pdo;
     try {
-        $sql = "delete from tasks where id = :id";
+        $sql = "DELETE FROM tasks WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->execute(["id" => $id]);
-        //si la cantidad de filas editadas es mayor a cero, retorne true, sino, retorne false;
         return $stmt->rowCount() > 0;
     } catch (Exception $e) {
         echo $e->getMessage();
@@ -72,91 +87,80 @@ function deleteTask($id)
 
 function validateInput($input)
 {
-    if (isset($input['title'], $input['description'], $input['due_date'])) {
-        return true;
-    }
-    return false;
-}
-
-
-$method = $_SERVER['REQUEST_METHOD'];
-header('Content-Type: application/json');
-
-function getJsonInput()
-{
-    return json_decode(file_get_contents("php://input"), associative: true);
+    return isset($input['title'], $input['description'], $input['due_date']);
 }
 
 session_start();
 
 if (isset($_SESSION["user_id"])) {
+    $userId = $_SESSION["user_id"];
+    $method = $_SERVER['REQUEST_METHOD'];
+    header('Content-Type: application/json');
+
     try {
-
-
-        //continuar con lo demas
-        $userId = $_SESSION["user_id"];
         switch ($method) {
             case 'GET':
-                $tareas = getTasksByUser($userId);
-                echo json_encode($tareas);
+                $tasks = getTasksByUser($userId);
+                echo json_encode($tasks);
                 break;
+
             case 'POST':
-                //convertir de JSON a array asociativo para facil manipulacion dentro de php
-                $input = getJsonInput();
+                $input = json_decode(file_get_contents("php://input"), true);
                 if (validateInput($input)) {
-                    $idTask = createTask($userId, $input['title'], $input['description'], $input['due_date']);
-                    if ($idTask > 0) {
+                    $taskId = createTask($userId, $input['title'], $input['description'], $input['due_date']);
+                    if ($taskId > 0) {
                         http_response_code(201);
-                        echo json_encode(["message" => "Tarea creada exitosamente. Id:" . $idTask]);
+                        echo json_encode(["message" => "Tarea creada exitosamente. Id: $taskId"]);
                     } else {
                         http_response_code(500);
-                        echo json_encode(['error' => "Error general creando la tarea"]);
+                        echo json_encode(["error" => "Error al crear la tarea"]);
                     }
                 } else {
                     http_response_code(400);
                     echo json_encode(["error" => "Datos insuficientes"]);
                 }
                 break;
+
             case 'PUT':
-                $input = getJsonInput();
-                if (validateInput($input)) {
+                $input = json_decode(file_get_contents("php://input"), true);
+                if (validateInput($input) && isset($_GET['id'])) {
                     if (editTask($_GET['id'], $input['title'], $input['description'], $input['due_date'])) {
-                        http_response_code(201);
-                        echo json_encode(['message' => "Tarea actualizada exitosamente"]);
+                        http_response_code(200);
+                        echo json_encode(["message" => "Tarea actualizada exitosamente"]);
                     } else {
                         http_response_code(500);
-                        echo json_encode(['error' => "Error interno al actualizar la tarea"]);
+                        echo json_encode(["error" => "Error al actualizar la tarea"]);
                     }
                 } else {
                     http_response_code(400);
-                    echo json_encode(['error' => 'Datos insuficientes']);
+                    echo json_encode(["error" => "Datos insuficientes o ID inválido"]);
                 }
-
                 break;
+
             case 'DELETE':
-                if ($_GET['id']) {
+                if (isset($_GET['id'])) {
                     if (deleteTask($_GET['id'])) {
                         http_response_code(200);
-                        echo json_encode(['message' => "Tarea eliminada exitosamente"]);
+                        echo json_encode(["message" => "Tarea eliminada exitosamente"]);
                     } else {
                         http_response_code(500);
-                        echo json_encode(['error' => "Error interno al eliminar una tarea"]);
+                        echo json_encode(["error" => "Error al eliminar la tarea"]);
                     }
                 } else {
                     http_response_code(400);
-                    echo json_encode(['error' => "Peticion invalida"]);
+                    echo json_encode(["error" => "ID inválido"]);
                 }
                 break;
 
             default:
                 http_response_code(405);
-                echo json_encode(["error" => "Metodo no permitido"]);
+                echo json_encode(["error" => "Método no permitido"]);
         }
-    } catch (Exception $exp) {
+    } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(['error' => "Error al procesar el request"]);
+        echo json_encode(["error" => $e->getMessage()]);
     }
 } else {
     http_response_code(401);
-    echo json_encode(["error" => "Sesion no activa"]);
+    echo json_encode(["error" => "Sesión no activa"]);
 }
